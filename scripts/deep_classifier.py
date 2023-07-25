@@ -71,6 +71,8 @@ class DeepClassifier:
                     print("MODEL FOUND")
                 else:
                     print("NO MODEL FOUND")
+            else:
+                print("NO MODEL FOUND")
 
         except Exception as err:
             print(repr(err))
@@ -94,9 +96,7 @@ class DeepClassifier:
             raise 'Function unusable with input state size != 1'
 
         images = torch.unsqueeze(images[0], dim=1)
-        print(activity.shape)
         activity = activity.repeat(images.shape[0], 1)
-        print(activity.shape)
         full_state = [images, activity]
         predictions = self.predict(full_state)
 

@@ -8,10 +8,12 @@ import cv2
 import random
 import torch
 from deep_classifier import DeepClassifier
+import rospkg
+import os
 
 class DeepBehaviourModelWrapper:
-    def __init__(self):
-        self.camera_topic = '/camera/color/image_raw'
+    def __init__(self, path):
+        self.camera_topic = rospy.get_param('~image_topic', '/camera/color/image_raw')
         
         self.camera_sub = rospy.Subscriber(self.camera_topic,
                                             Image,
@@ -20,7 +22,7 @@ class DeepBehaviourModelWrapper:
         self.frame_buffer = deque(maxlen=200)
         self.bridge = CvBridge()
         self.frame = np.ones((198, 198))
-        self.model = DeepClassifier(input_state_size=1, path='/home/michal/thesis/dl_behaviour_model/results/dlc/checkpoints')
+        self.model = DeepClassifier(input_state_size=1, path=model_path)
         self.mean = 127
         self.std = 77
 
@@ -85,9 +87,12 @@ class DeepBehaviourModelWrapper:
 
 if __name__ == '__main__':
     
-    rospy.init_node('deep_behaviour_model_wrapper')
+    rospy.init_node('deep_behaviour_model')
+    rospack = rospkg.RosPack()
+    package_path = rospack.get_path('migrave_deep_behaviour_model')
+    model_path = os.path.join(package_path, 'checkpoint')
 
-    deep_behaviour_model = DeepBehaviourModelWrapper()
+    deep_behaviour_model = DeepBehaviourModelWrapper(path=model_path)
     
     rospy.sleep(1.0)
     
