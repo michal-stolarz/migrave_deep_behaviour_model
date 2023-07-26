@@ -23,10 +23,10 @@ class DeepBehaviourModelWrapper:
         self.frame_buffer = deque(maxlen=150)
         self.bridge = CvBridge()
         self.frame = np.ones((198, 198))
-        self.model = DeepClassifier(input_state_size=1, path=model_path)
+        self.model = DeepClassifier(input_state_size=8, path=path)
         self.mean = 127
         self.std = 77
-        self.class_map = {0:'dif2', 1:'diff3', 2:'feedback'}
+        self.class_map = {0:'diff2', 1:'diff3', 2:'feedback'}
         
         weights = FCN_ResNet50_Weights.DEFAULT
         self.transforms = weights.transforms(resize_size=None)
@@ -116,12 +116,12 @@ class DeepBehaviourModelWrapper:
         
         frames = self.augment_frames(frames)
         image = np.concatenate([frame for frame in frames], axis=1)
-        frames = frames[np.newaxis,:, :, :]
+        frames = frames[np.newaxis, :, :, :]
         
         frames = (np.asarray(frames, dtype=np.float32)-self.mean)/self.std        
         frames = torch.from_numpy(frames)
         #frames = torch.movedim(frames, 1, 0)
-        activity = torch.from_numpy(np.asarray([1, 1, 0, 0], dtype=np.float32))
+        activity = torch.from_numpy(np.asarray([1, 1, 0, 0], dtype=np.float32)[np.newaxis, :])
         prediction = self.model.predict((frames, activity))
         
         print(prediction)
@@ -129,7 +129,7 @@ class DeepBehaviourModelWrapper:
         #for i, pred in enumerate(predictions):
         #    image = cv2.putText(image, self.class_map[int(pred)], (i*198, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
         
-        image = cv2.putText(image, self.class_map[int(prediction)], (i*198, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
+        image = cv2.putText(image, self.class_map[int(prediction)], (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
 
         image_message = self.bridge.cv2_to_imgmsg(image)
         self.image_pub.publish(image_message)
