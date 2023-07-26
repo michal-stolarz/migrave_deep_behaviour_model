@@ -13,7 +13,7 @@ from torchvision.utils import draw_segmentation_masks
 from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
 
 class DeepBehaviourModelWrapper:
-    def __init__(self, path):
+    def __init__(self, path, input_size, input_modalities):
         self.camera_topic = rospy.get_param('~image_topic', '/camera/color/image_raw')
         
         self.camera_sub = rospy.Subscriber(self.camera_topic,
@@ -23,7 +23,7 @@ class DeepBehaviourModelWrapper:
         self.frame_buffer = deque(maxlen=150)
         self.bridge = CvBridge()
         self.frame = np.ones((198, 198))
-        self.model = DeepClassifier(input_state_size=8, path=path)
+        self.model = DeepClassifier(input_state_size=input_size, input_modalities=input_modalities, path=path)
         self.mean = 127
         self.std = 77
         self.class_map = {0:'diff2', 1:'diff3', 2:'feedback'}
@@ -33,6 +33,7 @@ class DeepBehaviourModelWrapper:
         self.sem_class_to_idx = {cls: idx for (idx, cls) in enumerate(weights.meta["categories"])}
         self.seg_model = fcn_resnet50(weights=weights, progress=False)
         self.seg_model = self.seg_model.eval()
+        self.input_modalities = input_modalities
 
     def camera_cb(self, msg):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='mono8')
@@ -116,13 +117,16 @@ class DeepBehaviourModelWrapper:
         
         frames = self.augment_frames(frames)
         image = np.concatenate([frame for frame in frames], axis=1)
-        frames = frames[np.newaxis, :, :, :]
+        frames = frames[:, np.newaxis, :, :]
         
         frames = (np.asarray(frames, dtype=np.float32)-self.mean)/self.std        
         frames = torch.from_numpy(frames)
         #frames = torch.movedim(frames, 1, 0)
-        activity = torch.from_numpy(np.asarray([1, 1, 0, 0], dtype=np.float32)[np.newaxis, :])
-        prediction = self.model.predict((frames, activity))
+        if self.input_modalities == 1:
+            prediction = self.model.majority_vote(frames)
+        else:
+            activity = torch.from_numpy(np.asarray([1, 1, 0, 0], dtype=np.float32)[np.newaxis, :])
+            prediction = self.model.majority_vote((frames, activity))
         
         print(prediction)
         
@@ -142,7 +146,7 @@ if __name__ == '__main__':
     rospack = rospkg.RosPack()
     package_path = rospack.get_path('migrave_deep_behaviour_model')
 
-    deep_behaviour_model = DeepBehaviourModelWrapper(path=package_path)
+    deep_behaviour_model = DeepBehaviourModelWrapper(path=package_path, input_modalities=1)
     
     rospy.sleep(1.0)
     

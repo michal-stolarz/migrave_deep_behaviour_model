@@ -12,7 +12,7 @@ torch.manual_seed(42)
 
 
 class DeepClassifier:
-    def __init__(self, path, cfg=dcfg, validation=False, input_state_size=1):
+    def __init__(self, path, cfg=dcfg, validation=False, input_state_size=1, input_modalities=1):
         # cpu or cuda
         self.device = cfg.device  # torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.state_dim = cfg.proc_frame_size  # State dimensionality 84x84.
@@ -24,6 +24,7 @@ class DeepClassifier:
         self.epoch_end = self.epochs_num
         self.epoch_start = 0
         self.input_state_size = input_state_size
+        self.input_modalities = input_modalities
         self.classes_num = cfg.noutputs
         self.conf_matrix_labels = cfg.labels
         self.predictions = None
@@ -31,20 +32,37 @@ class DeepClassifier:
         if self.input_state_size == 1:
             nstates = cfg.nstates
             nfeats = cfg.nfeats
-            checkpoint_path = os.path.join(path, 'checkpoint/dlc1')
+            
+            if self.input_modalities == 1:
+                checkpoint_path = os.path.join(path, 'checkpoint/modal1/dlc1')
+            elif self.input_modalities == 2:
+                checkpoint_path = os.path.join(path, 'checkpoint/modal2/dlc1')
 
         elif self.input_state_size == 8:
             nstates = cfg.nstates_full
             nfeats = cfg.nfeats_full
-            checkpoint_path = os.path.join(path, 'checkpoint/dlc8')
+            
+            if self.input_modalities == 1:
+                checkpoint_path = os.path.join(path, 'checkpoint/modal1/dlc8')
+            elif self.input_modalities == 2:
+                checkpoint_path = os.path.join(path, 'checkpoint/modal2/dlc8')
             
         else:
             raise ValueError("Unaccountable state size")
+        
+        if self.input_modalities > 1 or self.input_modalities < 0:
+            raise ValueError("Unaccountable number of modalities")
 
-        self.model = DLC(noutputs=cfg.noutputs, nfeats=nfeats,
-                         nstates=nstates, kernels=cfg.kernels,
-                         strides=cfg.strides, poolsize=cfg.poolsize,
-                         enable_activity_signals=True)
+        if self.input_modalities == 1:
+            self.model = DLC(noutputs=cfg.noutputs, nfeats=nfeats,
+                            nstates=nstates, kernels=cfg.kernels,
+                            strides=cfg.strides, poolsize=cfg.poolsize,
+                            enable_activity_signals=False)
+        if self.input_modalities == 2:
+            self.model = DLC(noutputs=cfg.noutputs, nfeats=nfeats,
+                            nstates=nstates, kernels=cfg.kernels,
+                            strides=cfg.strides, poolsize=cfg.poolsize,
+                            enable_activity_signals=True)
 
         checkpoint_name = 'model_epoch'
         pattern = re.compile(checkpoint_name + '[0-9]+.pt')
@@ -85,26 +103,41 @@ class DeepClassifier:
 
     def predict(self, tensor):
         self.model.eval()
-        images, activity = tensor
-        print(images.shape, activity.shape)
+        
+        if self.input_modalities == 2:
+            images, activity = tensor
+        else: 
+            images = tensor
 
         images, activity = images.to(self.device), activity.to(self.device)
-        full_state = [images, activity]
-
+        
+        if self.input_modalities == 2:
+            full_state = [images, activity]
+        else:
+            full_state = images
+        
         with torch.no_grad():
             action_values = self.model(full_state)
 
         return torch.argmax(action_values.cpu().detach().clone(), dim=1)
 
     def majority_vote(self, tensor):
-        images, activity = tensor
+        if self.input_modalities == 2:
+            images, activity = tensor
+        else: 
+            images = tensor
 
         if self.input_state_size != 1:
             raise 'Function unusable with input state size != 1'
 
         images = torch.unsqueeze(images[0], dim=1)
         activity = activity.repeat(images.shape[0], 1)
-        full_state = [images, activity]
+        
+        if self.input_modalities == 2:
+            full_state = [images, activity]
+        else:
+            full_state = images
+                
         predictions = self.predict(full_state)
         self.predictions = predictions
 
