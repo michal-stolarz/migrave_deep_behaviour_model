@@ -86,6 +86,7 @@ class DeepClassifier:
     def predict(self, tensor):
         self.model.eval()
         images, activity = tensor
+        print(images.shape, activity.shape)
 
         images, activity = images.to(self.device), activity.to(self.device)
         full_state = [images, activity]
