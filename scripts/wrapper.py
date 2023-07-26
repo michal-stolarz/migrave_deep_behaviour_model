@@ -92,6 +92,7 @@ class DeepBehaviourModelWrapper:
                 last_frame = frames[-1]
                 frames = list(frames)
                 [frames.append(last_frame) for id in range(size-len(dissimilar_ids))]
+                frames = np.array(frames)
 
             elif len(dissimilar_ids) == size:
                 frames = frames[dissimilar_ids]
@@ -114,18 +115,23 @@ class DeepBehaviourModelWrapper:
     def act(self):
         frames = self.filter_frames(np.array(self.frame_buffer))
         
-        frames = self.augment_frames(frames)[np.newaxis, :, :, :]
-        image = np.concatenate([frame for frame in frames[0]], axis=1)
+        frames = self.augment_frames(frames)
+        image = np.concatenate([frame for frame in frames], axis=1)
+        frames = frames[np.newaxis,:, :, :]
         
         frames = (np.asarray(frames, dtype=np.float32)-self.mean)/self.std        
         frames = torch.from_numpy(frames)
-        frames = torch.movedim(frames, 1, 0)
-        activity = torch.from_numpy(np.asarray([1, 0, 1, 0], dtype=np.float32))
+        #frames = torch.movedim(frames, 1, 0)
+        activity = torch.from_numpy(np.asarray([1, 1, 0, 0], dtype=np.float32))
         prediction = self.model.majority_vote((frames, activity))
+        predictions = self.model.predictions
         
         print(prediction)
+        print(predictions)
         
-        image = cv2.putText(image, self.class_map[prediction], (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
+        for i, pred in enumerate(predictions):
+            image = cv2.putText(image, self.class_map[int(pred)], (i*198, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
+        
         image_message = self.bridge.cv2_to_imgmsg(image)
         self.image_pub.publish(image_message)
         
