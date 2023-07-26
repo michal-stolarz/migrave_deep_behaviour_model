@@ -9,7 +9,6 @@ import random
 import torch
 from deep_classifier import DeepClassifier
 import rospkg
-import os
 from torchvision.utils import draw_segmentation_masks
 from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
 
@@ -123,15 +122,15 @@ class DeepBehaviourModelWrapper:
         frames = torch.from_numpy(frames)
         #frames = torch.movedim(frames, 1, 0)
         activity = torch.from_numpy(np.asarray([1, 1, 0, 0], dtype=np.float32))
-        prediction = self.model.majority_vote((frames, activity))
-        predictions = self.model.predictions
+        prediction = self.model.predict((frames, activity))
         
         print(prediction)
-        print(predictions)
         
-        for i, pred in enumerate(predictions):
-            image = cv2.putText(image, self.class_map[int(pred)], (i*198, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
+        #for i, pred in enumerate(predictions):
+        #    image = cv2.putText(image, self.class_map[int(pred)], (i*198, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
         
+        image = cv2.putText(image, self.class_map[int(prediction)], (i*198, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
+
         image_message = self.bridge.cv2_to_imgmsg(image)
         self.image_pub.publish(image_message)
         
@@ -142,9 +141,8 @@ if __name__ == '__main__':
     rospy.init_node('deep_behaviour_model')
     rospack = rospkg.RosPack()
     package_path = rospack.get_path('migrave_deep_behaviour_model')
-    model_path = os.path.join(package_path, 'checkpoint')
 
-    deep_behaviour_model = DeepBehaviourModelWrapper(path=model_path)
+    deep_behaviour_model = DeepBehaviourModelWrapper(path=package_path)
     
     rospy.sleep(1.0)
     

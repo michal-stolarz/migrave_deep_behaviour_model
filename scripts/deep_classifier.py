@@ -27,12 +27,17 @@ class DeepClassifier:
         self.classes_num = cfg.noutputs
         self.conf_matrix_labels = cfg.labels
         self.predictions = None
-        checkpoint_path = path
 
-        # model
         if self.input_state_size == 1:
             nstates = cfg.nstates
             nfeats = cfg.nfeats
+            checkpoint_path = os.path.join(path, 'checkpoint/dlc1')
+
+        elif self.input_state_size == 8:
+            nstates = cfg.nstates_full
+            nfeats = cfg.nfeats_full
+            checkpoint_path = os.path.join(path, 'checkpoint/dlc8')
+            
         else:
             raise ValueError("Unaccountable state size")
 
