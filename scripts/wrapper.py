@@ -130,7 +130,12 @@ class DeepBehaviourModelWrapper:
             frames = torch.movedim(frames, 1, 0)
         
         if self.input_modalities == 1:
-            prediction = self.model.majority_vote(frames)
+            if self.input_size == 1:
+                prediction = self.model.majority_vote(frames)
+            else:
+                frames = torch.movedim(frames, 1, 0)
+                print(frames.shape)
+                prediction = self.model.predict(frames)
         else:
             activity = torch.from_numpy(np.asarray([1, 1, 0, 0], dtype=np.float32)[np.newaxis, :])
             prediction = self.model.majority_vote((frames, activity))
@@ -139,8 +144,12 @@ class DeepBehaviourModelWrapper:
             predictions = self.model.predictions
             for i, pred in enumerate(predictions):
                 image = cv2.putText(image, self.class_map[int(pred)], (i*198, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
+                image = cv2.rectangle(image, (i*198+56, 198), (i*198+142, 198-132), (0,0,255), 2)
+        
         if self.input_size == 8:
             image = cv2.putText(image, self.class_map[int(prediction)], (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
+            for i in range(8):
+                image = cv2.rectangle(image, (i*198+56, 198), (i*198+142, 198-132), (0,0,255), 2)
 
         image_message = self.bridge.cv2_to_imgmsg(image)
         self.image_pub.publish(image_message)
@@ -152,7 +161,7 @@ if __name__ == '__main__':
     rospack = rospkg.RosPack()
     package_path = rospack.get_path('migrave_deep_behaviour_model')
 
-    deep_behaviour_model = DeepBehaviourModelWrapper(path=package_path, input_size=1, input_modalities=1)
+    deep_behaviour_model = DeepBehaviourModelWrapper(path=package_path, input_size=8, input_modalities=1)
     
     rospy.sleep(1.0)
     
