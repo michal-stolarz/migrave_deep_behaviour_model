@@ -50,7 +50,7 @@ class DeepClassifier:
         else:
             raise ValueError("Unaccountable state size")
         
-        if self.input_modalities > 1 or self.input_modalities < 0:
+        if self.input_modalities > 2 or self.input_modalities < 0:
             raise ValueError("Unaccountable number of modalities")
 
         if self.input_modalities == 1:
@@ -106,14 +106,11 @@ class DeepClassifier:
         
         if self.input_modalities == 2:
             images, activity = tensor
+            images, activity = images.to(self.device), activity.to(self.device)
+            full_state = [images, activity]
         else: 
             images = tensor
-
-        images, activity = images.to(self.device), activity.to(self.device)
-        
-        if self.input_modalities == 2:
-            full_state = [images, activity]
-        else:
+            images = images.to(self.device)
             full_state = images
         
         with torch.no_grad():
@@ -131,13 +128,13 @@ class DeepClassifier:
             raise 'Function unusable with input state size != 1'
 
         images = torch.unsqueeze(images[0], dim=1)
-        activity = activity.repeat(images.shape[0], 1)
         
         if self.input_modalities == 2:
+            activity = activity.repeat(images.shape[0], 1)
             full_state = [images, activity]
         else:
             full_state = images
-                
+        
         predictions = self.predict(full_state)
         self.predictions = predictions
 
