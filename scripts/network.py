@@ -30,28 +30,34 @@ class DLC(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(self.poolsize),
         )
-        self.image_classifier = nn.Sequential(
+        classifier = nn.Sequential(
             nn.Linear(self.nstates[2] * self.kernels[1] * self.kernels[1], self.nstates[3]),
             nn.ReLU(),
             nn.Linear(self.nstates[3], self.noutputs),
         )
+        
+        if self.enable_activity_signals:
+            self.linear = nn.Sequential(
+                nn.Linear(self.activity_vector_size, 16),
+                nn.ReLU()
+            )
 
-        self.linear = nn.Sequential(
-            nn.Linear(self.activity_vector_size, 16),
-            nn.ReLU()
-        )
-
-        self.fc1 = nn.Sequential(
-            nn.Linear(self.nstates[2] * self.kernels[1] * self.kernels[1], 16),
-            nn.ReLU()
-        )
-        self.fc2 = nn.Sequential(
-            nn.Linear(32, 16),
-            nn.ReLU()
-        )
-        self.classifier = nn.Sequential(
-            nn.Linear(16, self.noutputs),
-        )
+            self.fc1 = nn.Sequential(
+                nn.Linear(self.nstates[2] * self.kernels[1] * self.kernels[1], 16),
+                nn.ReLU()
+            )
+            self.fc2 = nn.Sequential(
+                nn.Linear(32, 16),
+                nn.ReLU()
+            )
+            self.classifier = nn.Sequential(
+                nn.Linear(16, self.noutputs),
+            )
+            
+            self.image_classifier = classifier
+          
+        else:
+            self.classifier = classifier
 
     def forward(self, x):
         if self.enable_activity_signals and len(x)!=2:
@@ -73,7 +79,7 @@ class DLC(nn.Module):
             cat = self.fc2(cat)
             result = self.classifier(cat)
         else:
-            result = self.image_classifier(features)
+            result = self.classifier(features)
 
         return result
 
