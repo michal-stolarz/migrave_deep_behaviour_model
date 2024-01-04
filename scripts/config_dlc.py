@@ -15,7 +15,7 @@ epochs = 12 #6 for dlc1, 20 for dlc8
 labels = ['diff2', 'diff3', 'feedback']
 
 # network
-noutputs = 2
+noutputs = 3
 nfeats = 1
 nfeats_full = 8 # for the model taking 8 frames as an input
 nstates = [8, 16, 32, 128] # for input of 1 frame

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="user" default="qtrobot" />
+    <arg name="participant" default="1" />
+    <arg name="checkpoint" default="dlc8_extended" />
+
+    <node pkg="migrave_deep_behaviour_model" type="wrapper.py" name="migrave_deep_behaviour_model" output="screen">
+        <param name="output_directory" type="str" value="/home/$(arg user)/experiments/$(arg participant)/game_performance/" />
+        <param name="checkpoint_name" type="str" value="$(arg checkpoint)" />
+    </node>
+</launch>

@@ -9,11 +9,11 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
-#add_message_files(
-#   DIRECTORY msg
-#   FILES
-#   GameAction.msg
-#)
+add_message_files(
+   DIRECTORY msg
+   FILES
+   GameAction.msg
+)
 
 #add_action_files(
 #  DIRECTORY action
