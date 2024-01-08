@@ -2,7 +2,6 @@
 import rospy
 import numpy as np
 from sensor_msgs.msg import Image
-from std_msgs.msg import Bool
 import cv2
 from cv_bridge import CvBridge
 from collections import deque
@@ -73,7 +72,7 @@ class ImageBuffer:
         similarities = []
 
         for idx in range(0, frames.shape[0] - 1):
-            similarity = self.get_similarity(frames[idx], frames[idx + 1])
+            similarity = self.__get_similarity(frames[idx], frames[idx + 1])
             similarities.append(similarity)
 
         similarities = np.array(similarities)
@@ -107,7 +106,7 @@ class ImageBuffer:
     def __augment_frames(self, frames):
         images = []
         for frame in frames:
-            image = self.augment(torch.from_numpy(frame))
+            image = self.__augment(torch.from_numpy(frame))
             images.append(image)
 
         return np.array(images)[:, np.newaxis, :, :]
@@ -116,6 +115,6 @@ class ImageBuffer:
         frames = self.__filter_frames(np.array(self.frame_buffer))
 
         if augment_frames:
-            frames = self.augment_frames(frames)
+            frames = self.__augment_frames(frames)
 
         return frames

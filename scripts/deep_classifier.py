@@ -1,12 +1,8 @@
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.optim as optim
 import os
 from network import DLC
 import config_dlc as dcfg
-import re
-import matplotlib.pyplot as plt
 
 torch.manual_seed(42)
 

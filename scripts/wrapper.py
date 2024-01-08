@@ -2,14 +2,12 @@
 import os
 from csv import DictWriter
 from datetime import datetime
-
 import rospy
 import numpy as np
 from sensor_msgs.msg import Image
 import cv2
 from migrave_deep_behaviour_model.msg import GameAction
 from migrave_ros_msgs.msg import GameActivity, GamePerformance
-import random
 import torch
 from std_msgs.msg import Int32, Bool
 from deep_classifier import DeepClassifier
@@ -247,7 +245,7 @@ class DeepBehaviourModelWrapper:
 
 
 if __name__ == '__main__':
-    
+
     rospy.init_node('deep_behaviour_model')
     rospack = rospkg.RosPack()
     package_path = "/home/michal/migrave_ws/src/migrave_deep_behaviour_model" #rospack.get_path('migrave_deep_behaviour_model')
