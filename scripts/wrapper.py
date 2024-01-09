@@ -166,8 +166,8 @@ class DeepBehaviourModelWrapper:
 
     def merge_frames(self, frames, prediction):
         image = np.concatenate([frame for frame in frames], axis=2)[0]
-        image = cv2.putText(image, self.class_map[int(prediction)], (0, 30), cv2.FONT_HERSHEY_SIMPLEX,
-                            1, (0,0,255), 2, cv2.LINE_AA)
+        image = cv2.putText(image, self.class_map[prediction], (0, 30), cv2.FONT_HERSHEY_SIMPLEX,
+                            1, (0, 0, 255), 2, cv2.LINE_AA)
         for i in range(8):
             image = cv2.rectangle(image, (i*198+56, 198), (i*198+142, 198-132), (0,0,255), 2)
 
@@ -200,7 +200,8 @@ class DeepBehaviourModelWrapper:
                 frames = self.buffer.get_frames()
                 self.buffer.reset()
                 activity_vector = self.get_activity_vector(difficulty_level, answer_correctness)
-                self.action = self.get_prediction(frames=frames, activity_vector=activity_vector)
+                action = self.get_prediction(frames=frames, activity_vector=activity_vector)
+                self.action = int(action)
                 print(self.action)
                 merged_frames = self.merge_frames(frames, self.action)
                 image_message = self.bridge.cv2_to_imgmsg(merged_frames)
@@ -220,12 +221,14 @@ class DeepBehaviourModelWrapper:
                     sequence_data = self.generate_random_sequence(self.emotions_ids[0], len(self.emotions_ids),
                                                                   length=5)
                     difficulty_level = 7
-                elif self.action == 3:
+                elif self.action == 2:
                     feedback = np.random.randint(low=1, high=3, size=1)[0] #can be either 1 or 2
                     perform_feedback = True
                     difficulty_level = game_action.difficulty_level
                     sequence_data = self.generate_random_sequence(self.emotions_ids[0], len(self.emotions_ids),
                                                                   length=difficulty_level)
+                else:
+                    except RuntimeError("The used model has unsuitable action space.")
 
                 game_action.emotions = sequence_data
                 game_action.feedback = feedback
