@@ -202,7 +202,6 @@ class DeepBehaviourModelWrapper:
                 activity_vector = self.get_activity_vector(difficulty_level, answer_correctness)
                 action = self.get_prediction(frames=frames, activity_vector=activity_vector)
                 self.action = int(action)
-                print(self.action)
                 merged_frames = self.merge_frames(frames, self.action)
                 image_message = self.bridge.cv2_to_imgmsg(merged_frames)
                 self.image_pub.publish(image_message)
@@ -211,20 +210,18 @@ class DeepBehaviourModelWrapper:
 
                 feedback = 0
                 perform_feedback = False
-                difficulty_level = 0
 
                 if self.action == 0:
                     sequence_data = self.generate_random_sequence(self.emotions_ids[0], len(self.emotions_ids),
-                                                                  length=3)
+                                                                  length=5)
                     difficulty_level = 5
                 elif self.action == 1:
                     sequence_data = self.generate_random_sequence(self.emotions_ids[0], len(self.emotions_ids),
-                                                                  length=5)
+                                                                  length=7)
                     difficulty_level = 7
                 elif self.action == 2:
                     feedback = np.random.randint(low=1, high=3, size=1)[0] #can be either 1 or 2
                     perform_feedback = True
-                    difficulty_level = game_action.difficulty_level
                     sequence_data = self.generate_random_sequence(self.emotions_ids[0], len(self.emotions_ids),
                                                                   length=difficulty_level)
                 else:
