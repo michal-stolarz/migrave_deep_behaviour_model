@@ -60,6 +60,7 @@ class DeepClassifier:
         if self.input_modalities == 2:
             images, activity = tensor
             images, activity = images.to(self.device), activity.to(self.device)
+            images = torch.movedim(images, 0, 1)
             full_state = [images, activity]
         else:
             images = tensor

@@ -196,7 +196,8 @@ class DeepBehaviourModelWrapper:
                 self.buffer.reset()
                 activity_vector = self.get_activity_vector(difficulty_level, answer_correctness)
                 self.action = self.get_prediction(frames=frames, activity_vector=activity_vector)
-                merged_frames = self.merge_frames(frames)
+                print(self.action)
+                merged_frames = self.merge_frames(frames, self.action)
                 image_message = self.bridge.cv2_to_imgmsg(merged_frames)
                 self.image_pub.publish(image_message)
 
