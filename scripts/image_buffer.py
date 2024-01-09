@@ -11,7 +11,7 @@ from torchvision.utils import draw_segmentation_masks
 
 
 class ImageBuffer:
-    def __init__(self, camera_topic, buffer_len=200, image_width=198, image_height=198):
+    def __init__(self, camera_topic, buffer_len=200, image_width=198, image_height=198, ros_cv_bridge=CvBridge()):
         self.buffer_len = buffer_len
         self.camera_topic = camera_topic
         self.camera_sub = rospy.Subscriber(self.camera_topic,
@@ -20,7 +20,7 @@ class ImageBuffer:
 
         self.image_pub = rospy.Publisher('test_img', Image, queue_size=10)
         self.frame_buffer = deque(maxlen=buffer_len)
-        self.bridge = CvBridge()
+        self.bridge = ros_cv_bridge
         self.frame = np.ones((image_width, image_height))
         self.is_camera_subscribed = True
 

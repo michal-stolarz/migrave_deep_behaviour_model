@@ -12,6 +12,7 @@ import torch
 from std_msgs.msg import Int32, Bool
 from deep_classifier import DeepClassifier
 import rospkg
+from cv_bridge import CvBridge
 from image_buffer import ImageBuffer
 from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
 
@@ -19,6 +20,8 @@ from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
 class DeepBehaviourModelWrapper:
     def __init__(self, package_path, log_path, model_name):
         self.class_map = {0: 'diff2', 1: 'diff3', 2: 'feedback'}
+        ros_cv_bridge = CvBridge()
+
         camera_topic = rospy.get_param('~image_topic', '/camera/color/image_raw')
         self.image_pub = rospy.Publisher('test_img', Image, queue_size=10)
         self.model = DeepClassifier(input_state_size=8,
@@ -29,7 +32,8 @@ class DeepBehaviourModelWrapper:
         self.image_height = 198
         self.buffer = ImageBuffer(camera_topic=camera_topic,
                                   image_width=self.image_width,
-                                  image_height=self.image_height)
+                                  image_height=self.image_height,
+                                  ros_cv_bridge=ros_cv_bridge)
         self.mean = 127
         self.std = 77
         self.frame = np.ones((self.image_width, self.image_height))
