@@ -18,6 +18,7 @@ from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
 
 class DeepBehaviourModelWrapper:
     def __init__(self, package_path, log_path, model_name):
+        self.class_map = {0: 'diff2', 1: 'diff3', 2: 'feedback'}
         camera_topic = rospy.get_param('~image_topic', '/camera/color/image_raw')
         self.image_pub = rospy.Publisher('test_img', Image, queue_size=10)
         self.model = DeepClassifier(input_state_size=8,
