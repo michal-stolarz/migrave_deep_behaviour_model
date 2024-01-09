@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 from csv import DictWriter
-from datetime import datetime
+import datetime
 import rospy
 import numpy as np
 from sensor_msgs.msg import Image
