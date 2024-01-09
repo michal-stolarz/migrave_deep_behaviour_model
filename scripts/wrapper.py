@@ -228,7 +228,7 @@ class DeepBehaviourModelWrapper:
                     sequence_data = self.generate_random_sequence(self.emotions_ids[0], len(self.emotions_ids),
                                                                   length=difficulty_level)
                 else:
-                    except RuntimeError("The used model has unsuitable action space.")
+                    raise RuntimeError("The used model has unsuitable action space.")
 
                 game_action.emotions = sequence_data
                 game_action.feedback = feedback
