@@ -139,7 +139,7 @@ class DeepBehaviourModelWrapper:
             labels_to_save = ['game_start_time', 'action', 'solving_end_time',
                               'game_id', 'game_activity_id', 'difficulty_level',
                               'answer_correctness', 'solving_duration']
-            game_performance_writer = DictWriter(game_performance_csv, fieldnames=labels_to_save)
+            game_performance_writer = DictWriter(self.game_performance_csv, fieldnames=labels_to_save)
             game_performance_writer.writerow(current_performance)
             self.game_performance_csv.close()
 
@@ -189,11 +189,12 @@ class DeepBehaviourModelWrapper:
             if self.last_game_action is None:
                 game_action = GameAction()
                 difficulty_level = self.difficulty_level
-                answer_correctness = self.answer_correctness
+
             else:
                 game_action = self.last_game_action
                 difficulty_level = game_action.difficulty_level
-                answer_correctness = game_action.answer_correctness
+
+            answer_correctness = self.answer_correctness
 
             if self.new_action_id != self.old_action_id:
                 self.buffer.switch_off()
