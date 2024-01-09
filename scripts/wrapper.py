@@ -135,7 +135,7 @@ class DeepBehaviourModelWrapper:
 
             self.acknowledging_game_performance = False
 
-            self.game_performance_csv = open(os.path.join(self.output_path, f"game_performance_{self.mode}.csv"), 'a')
+            self.game_performance_csv = open(os.path.join(self.output_path, f"game_performance.csv"), 'a')
             labels_to_save = ['game_start_time', 'action', 'solving_end_time',
                               'game_id', 'game_activity_id', 'difficulty_level',
                               'answer_correctness', 'solving_duration']
