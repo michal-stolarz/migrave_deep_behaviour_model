@@ -47,7 +47,7 @@ class DeepClassifier:
                 checkpoint = torch.load(os.path.join(checkpoint_path, entry),
                                         map_location=torch.device('cpu'))
                 self.model.load_state_dict(checkpoint['model_state_dict'])
-                print("MODEL FOUND")
+                print(f"MODEL FOUND: {model_name}")
             else:
                 print("NO MODEL FOUND")
 
